@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sazuki Video Downloader - ទាញយកវីដេអូ</title>
+    <title>Sazuki Downloader - ទាញយកវីដេអូ TikTok</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', sans-serif; }
@@ -55,8 +55,8 @@
             </div>
 
             <div id="resultSection" class="result">
-                <h3 id="videoTitle">✅ ទាញយកវីដេអូได้สำเร็จ!</h3>
-                <a id="downloadLinkBtn" href="#" class="download-btn" target="_blank">⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)</a>
+                <h3 id="videoTitle">✅ ទាញយកបានសម្រេច!</h3>
+                <a id="downloadLinkBtn" href="#" class="download-btn">⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)</a>
             </div>
         </div>
     </main>
@@ -79,7 +79,6 @@
             resultSection.style.display = 'none';
 
             try {
-                // ใช้ Free Public API สำหรับดึงข้อมูล TikTok โดยไม่ต้องใช้ Backend
                 const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(urlInput)}`;
                 const response = await fetch(apiUrl);
                 const data = await response.json();
@@ -90,14 +89,39 @@
                     resultSection.style.display = 'block';
                     videoTitle.innerText = `✅ ${data.data.title || 'ទាញយកបានសម្រេច!'}`;
                     
-                    // ดึงลิงก์สำหรับดาวน์โหลดไฟล์ MP4 แบบไม่มีลายน้ำ (No Watermark)
-                    downloadLinkBtn.href = data.data.play;
+                    const videoDownloadUrl = data.data.play;
+
+                    downloadLinkBtn.onclick = async function(e) {
+                        e.preventDefault();
+                        downloadLinkBtn.innerText = "⏳ กำลังดาวน์โหลด...";
+
+                        try {
+                            const videoRes = await fetch(videoDownloadUrl);
+                            const blob = await videoRes.blob();
+                            const blobUrl = window.URL.createObjectURL(blob);
+                            
+                            const a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = 'sazuki_video.mp4';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            window.URL.revokeObjectURL(blobUrl);
+
+                            downloadLinkBtn.innerText = "⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)";
+                        } catch (err) {
+                            console.error(err);
+                            window.open(videoDownloadUrl, '_blank');
+                            downloadLinkBtn.innerText = "⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)";
+                        }
+                    };
+
                 } else {
-                    alert('ไม่สามารถดึงข้อมูลวิดีโอได้ กรุณาตรวจสอบลิงก์อีกครั้ง!');
+                    alert('មិនអាចទាញយកទិន្នន័យវីដេអូបានទេ សូមពិនិត្យមើល Link ម្តងទៀត!');
                 }
             } catch (error) {
                 loadingState.style.display = 'none';
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับ API!');
+                alert('មានបញ្ហាក្នុងการតភ្ជាប់ជាមួយ API!');
                 console.error(error);
             }
         });
