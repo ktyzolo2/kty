@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sazuki Video Downloader - ទាញយកវីដេអូ</title>
+    <!-- Google Fonts សម្រាប់អក្សរខ្មែរស្អាត -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kantumruy Pro', sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        header {
+            background-color: #0284c7;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tg-btn {
+            background-color: #0369a1;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .tg-btn:hover {
+            background-color: #075985;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .card {
+            background-color: #1e293b;
+            width: 100%;
+            max-width: 480px;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .title {
+            color: #38bdf8;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .input-group input {
+            width: 100%;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            color: #ffffff;
+            padding: 12px 16px 12px 42px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #38bdf8;
+        }
+
+        .input-group .icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(15, 23, 42, 0.6);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            accent-color: #0284c7;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 4px solid #38bdf8;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+            background-color: #0f172a;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            text-align: center;
+        }
+
+        .result h3 {
+            color: #38bdf8;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+        }
+
+        .download-btn {
+            display: block;
+            background-color: #059669;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            text-align: center;
+        }
+
+        .download-btn:hover {
+            background-color: #047857;
+        }
+
+        footer {
+            background-color: #020617;
+            text-align: center;
+            padding: 14px;
+            color: #64748b;
+            font-size: 0.75rem;
+            border-top: 1px solid #1e293b;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>📥</span> Sazuki Downloader
+        </div>
+        <a href="https://t.me/knogaming" target="_blank" class="tg-btn">
+            ចូលរួម TG ឆាត
+        </a>
+    </header>
+
+    <main>
+        <div class="card">
+            <h1 class="title">ទាញយកវីដេអូ & បកប្រែ AI</h1>
+            <p class="subtitle">ដាក់តំណរភ្ជាប់ (Link) ពី TikTok, YouTube ឬ Facebook នៅទីនេះ</p>
+
+            <form id="downloadForm">
+                <div class="input-group">
+                    <span class="icon">🔗</span>
+                    <input type="url" id="videoUrl" required placeholder="បិទភ្ជាប់តំណរភ្ជាប់ (URL) នៅទីនេះ...">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="translateAi">
+                    <label for="translateAi">🤖 បកប្រែសំឡេងរឿងចិនមកជាភាសាខ្មែរដោយ AI (Dubbing)</label>
+                </div>
+
+                <button type="submit" class="submit-btn">ចាប់ផ្តើមទាញយក ⚡</button>
+            </form>
+
+            <div id="loadingState" class="loading">
+                <div class="spinner"></div>
+                <p style="color: #38bdf8; font-size: 0.85rem;" id="loadingText">ប្រព័ន្ធកំពុងដំណើរការទាញយក...</p>
+            </div>
+
+            <div id="resultSection" class="result">
+                <h3 id="videoTitle">✅ ទាញយកវីដេអូបានសម្រេច!</h3>
+                <!-- ប្ដូរពី tag a មកជា button ដើម្បីគ្រប់គ្រងការ Download ដោយសុវត្ថិភាព -->
+                <button id="downloadBtnAction" class="download-btn">⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2026 Sazuki Top Up & Downloader. រក្សាសិទ្ធិគ្រប់យ៉ាង។
+    </footer>
+
+    <!-- JavaScript ដែលបានកែសម្រួលថ្មី -->
+    <script>
+        const form = document.getElementById('downloadForm');
+        const loadingState = document.getElementById('loadingState');
+        const loadingText = document.getElementById('loadingText');
+        const resultSection = document.getElementById('resultSection');
+        const downloadBtnAction = document.getElementById('downloadBtnAction');
+        const videoTitle = document.getElementById('videoTitle');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const urlInput = document.getElementById('videoUrl').value;
+            const translateAiChecked = document.getElementById('translateAi').checked;
+            if(!urlInput) return;
+
+            // បង្ហាញ Loading
+            loadingState.style.display = 'block';
+            resultSection.style.display = 'none';
+            loadingText.innerText = "ប្រព័ន្ធកំពុងទាញយកវីដេអូពី Server...";
+
+            try {
+                // ផ្ញើសំណើទៅកាន់ Python Backend (Pydroid 3)
+                const response = await fetch('http://127.0.0.1:8000/api/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        url: urlInput, 
+                        translate: translateAiChecked 
+                    })
+                });
+
+                const data = await response.json();
+                loadingState.style.display = 'none';
+
+                if(response.ok && data.status === 'success') {
+                    resultSection.style.display = 'block';
+                    videoTitle.innerText = `✅ ${data.title || 'ទាញយកបានសម្រេច!'}`;
+
+                    // កែច្នៃប៊ូតុង Download ដើម្បីទាញយកជា File MP4 ផ្ទាល់ មិនឱ្យលោតចូល App ក្រៅ
+                    downloadBtnAction.onclick = async function() {
+                        downloadBtnAction.innerText = "កំពុងទាញយកចូលទូរស័ព្ទ...";
+                        try {
+                            // ទាញយកទិន្នន័យវីដេអូជា Blob ឆ្លងកាត់ Fetch ដើម្បីបង្ខំឱ្យវា Save ជា File
+                            const videoResponse = await fetch(data.download_url);
+                            const blob = await videoResponse.blob();
+                            const blobUrl = window.URL.createObjectURL(blob);
+                            
+                            const a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = 'sazuki_video.mp4'; // ឈ្មោះ File ដែលនឹងត្រូវរក្សាទុកក្នុងទូរស័ព្ទ
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            window.URL.revokeObjectURL(blobUrl);
+
+                            downloadBtnAction.innerText = "⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)";
+                        } catch (err) {
+                            console.error(err);
+                            // បើជាប់បញ្ហា CORS ជាមួយ Server ខាងក្រៅ វាจะបើក Link ជំនួសវិញដោយសុវត្ថិភាព
+                            window.open(data.download_url, '_blank');
+                            downloadBtnAction.innerText = "⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)";
+                        }
+                    };
+
+                } else {
+                    alert('មានបញ្ហា៖ ' + (data.detail || 'មិនអាចទាញយកវីដេអូបានទេ!'));
+                }
+
+            } catch (error) {
+                loadingState.style.display = 'none';
+                alert('មិនអាចតភ្ជាប់ទៅកាន់ Server (Pydroid 3) បានទេ! សូមពិនិត្យមើលថាតើ Python កំពុងរត់ឬអត់។');
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
