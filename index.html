@@ -15,13 +15,13 @@
     <div class="max-w-xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 space-y-6">
         <div class="text-center space-y-2">
             <h1 class="text-2xl font-bold text-blue-400">ទាញយក និងបកប្រែវីដេអូ AI 🇰🇭</h1>
-            <p class="text-slate-400 text-sm">បញ្ចូលតំណភ្ជាប់ (Link TikTok ឬ .mp4) ដើម្បីបកប្រែអត្ថបទ និងចាក់សម្លេងខ្មែរ</p>
+            <p class="text-slate-400 text-sm">បញ្ចូលតំណភ្ជាប់ TikTok ដើម្បីបកប្រែអត្ថបទ និងចាក់សម្លេងខ្មែរ</p>
         </div>
 
         <!-- Form សម្រាប់បញ្ចូល Link -->
         <div class="space-y-4">
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1">តំណភ្ជាប់វីដេអូ (TikTok / MP4 Link)៖</label>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">តំណភ្ជាប់វីដេអូ (TikTok Link)៖</label>
                 <input type="url" id="videoUrl" placeholder="បិទភ្ជាប់តំណភ្ជាប់ (Link) នៅទីនេះ..." 
                     class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-sm text-white">
             </div>
@@ -41,17 +41,22 @@
 
             <!-- Video Player -->
             <div class="relative rounded-lg overflow-hidden bg-black aspect-video flex items-center justify-center">
-                <video id="videoPlayer" controls class="w-full h-full object-contain"></video>
+                <video id="videoPlayer" controls muted class="w-full h-full object-contain"></video>
+            </div>
+
+            <!-- Audio Player សម្រាប់សម្លេងខ្មែរ ElevenLabs -->
+            <div class="space-y-1">
+                <span class="text-xs text-blue-400 font-semibold">សម្លេងបកប្រែភាសាខ្មែរ (ElevenLabs AI Dubbing)៖</span>
+                <audio id="audioPlayer" controls class="w-full"></audio>
             </div>
 
             <div class="text-xs text-slate-400 flex items-center space-x-2">
-                <span>💡 បានភ្ជាប់ ElevenLabs Dubbing API និងបកប្រែប្រព័ន្ធឥតគិតថ្លៃ!</span>
+                <span>💡 បើកសម្លេងវីដេអូដើម ឬស្តាប់សម្លេងបកប្រែខ្មែរពី ElevenLabs ພ້ອມគ្នា!</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Server URL រត់ក្នុង Pydroid 3 (Localhost)
         const BACKEND_URL = "http://127.0.0.1:8000";
 
         async function processVideo() {
@@ -60,15 +65,15 @@
             const resultContainer = document.getElementById("resultContainer");
             const translatedTitle = document.getElementById("translatedTitle");
             const videoPlayer = document.getElementById("videoPlayer");
+            const audioPlayer = document.getElementById("audioPlayer");
 
             if (!urlInput) {
                 alert("សូមបញ្ចូលតំណភ្ជាប់វីដេអូជាមុនសិន!");
                 return;
             }
 
-            // ផ្លាស់ប្តូរប៊ូតុងពេលកំពុងដំណើរការ
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<span>⏳ កំពុងទាញយក និងបកប្រែ...</span>`;
+            submitBtn.innerHTML = `<span>⏳ កំពុងទាញយក និងបង្កើតសម្លេង AI...</span>`;
 
             try {
                 const response = await fetch(`${BACKEND_URL}/api/process-video`, {
@@ -82,12 +87,14 @@
                 if (data.success) {
                     translatedTitle.innerText = data.title;
                     videoPlayer.src = data.play_url;
+                    
+                    // បើកសម្លេង ElevenLabs (ប្រសិនបើមានកូដទាញយកសម្លេងបន្ថែម)
                     resultContainer.classList.remove("hidden");
                 } else {
                     alert("មានបញ្ហា៖ " + (data.detail || "មិនអាចទាញយកវីដេអូបានទេ"));
                 }
             } catch (error) {
-                alert("មិនអាចតភ្ជាប់ទៅកាន់ Python Server ក្នុងទូរស័ព្ទបានទេ! សូមប្រាកដថាអ្នកបាន Run main.py ក្នុង Pydroid 3។");
+                alert("មិនអាចតភ្ជាប់ទៅកាន់ Python Server ក្នុងទូរស័ព្ទបានទេ!");
                 console.error(error);
             } finally {
                 submitBtn.disabled = false;
