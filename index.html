@@ -46,17 +46,17 @@
                     <span class="icon">🔗</span>
                     <input type="url" id="videoUrl" required placeholder="បិទភ្ជាប់តំណរភ្ជាប់ TikTok...">
                 </div>
-                <button type="submit" class="submit-btn">ចាប់ផ្តើមទាញយកធម្មតា 🚀</button>
+                <button type="submit" class="submit-btn">ចាប់ផ្តើមដំណើរការ AI 🚀</button>
             </form>
 
             <div id="loadingState" class="loading">
                 <div class="spinner"></div>
-                <p style="color: #38bdf8; font-size: 0.85rem;">ប្រព័ន្ធកំពុងដំណើរការទិន្នន័យ...</p>
+                <p style="color: #38bdf8; font-size: 0.85rem;">ប្រព័ន្ធ AI កំពុងដំណើរការទិន្នន័យ...</p>
             </div>
 
             <div id="resultSection" class="result">
                 <h3 id="videoTitle">✅ ទទួលបានសម្រេច!</h3>
-                <a id="downloadLinkBtn" href="#" class="download-btn">⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)</a>
+                <a id="downloadLinkBtn" href="#" class="download-btn">⬇️ ទាញយកវីដេអូ (MP4)</a>
                 <div id="aiStatus" style="margin-top: 10px; font-size: 0.8rem; color: #38bdf8;"></div>
             </div>
         </div>
@@ -81,22 +81,30 @@
             resultSection.style.display = 'none';
 
             try {
-                // បច្ចុប្បន្នប្រើប្រាស់ Public API ផ្ទាល់ (ពេលក្រោយអាចប្តូរ Link ទៅកាន់ Backend Server របស់អ្នកនៅទីនេះ)
-                const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(urlInput)}`;
-                const response = await fetch(apiUrl);
-                const data = await response.json();
+                // តភ្ជាប់ទៅកាន់ Backend Server របស់អ្នក (ពេលធ្វើតេស្តក្នុងទូរស័ព្ទ ឬដាក់លើ Cloud)
+                // ពេលដាក់លើ Render ត្រូវប្តូរ Link នេះទៅជា Link Cloud របស់អ្នក
+                const backendUrl = "http://127.0.0.1:8000/api/process-video";
 
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: urlInput })
+                });
+
+                const data = await response.json();
                 loadingState.style.display = 'none';
 
-                if(data && data.code === 0) {
+                if(data && data.success) {
                     resultSection.style.display = 'block';
-                    videoTitle.innerText = `✅ ${data.data.title || 'ទាញយកបានសម្រេច!'}`;
-                    aiStatus.innerText = "💡 ស្ថានភាព៖ ត្រៀមខ្លួនសម្រាប់ភ្ជាប់មុខងារ AI Dubbing";
+                    videoTitle.innerText = `✅ ${data.title || 'ទាញយកបានសម្រេច!'}`;
+                    aiStatus.innerText = `💡 ${data.message}`;
                     
-                    const videoDownloadUrl = data.data.play;
+                    const videoDownloadUrl = data.play_url;
 
-                    downloadLinkBtn.onclick = async function(e) {
-                        e.preventDefault();
+                    downloadLinkBtn.onclick = async function(ev) {
+                        ev.preventDefault();
                         downloadLinkBtn.innerText = "⏳ កំពុងទាញយកចូលទូរស័ព្ទ...";
 
                         try {
@@ -112,20 +120,20 @@
                             document.body.removeChild(a);
                             window.URL.revokeObjectURL(blobUrl);
 
-                            downloadLinkBtn.innerText = "⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)";
+                            downloadLinkBtn.innerText = "⬇️ ទាញយកវីដេអូ (MP4)";
                         } catch (err) {
                             console.error(err);
                             window.open(videoDownloadUrl, '_blank');
-                            downloadLinkBtn.innerText = "⬇️ ទាញយកវីដេអូចូលទូរស័ព្ទ (MP4)";
+                            downloadLinkBtn.innerText = "⬇️ ទាញយកវីដេអូ (MP4)";
                         }
                     };
 
                 } else {
-                    alert('មិនអាចទាញយកទិន្នន័យវីដេអូបានទេ សូមពិនិត្យមើល Link ម្តងទៀត!');
+                    alert('មិនអាចទាញយកទិន្នន័យវីដេអូបានទេ!');
                 }
             } catch (error) {
                 loadingState.style.display = 'none';
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ជាមួយប្រព័ន្ធ!');
+                alert('មានបញ្ហាកในการតភ្ជាប់ជាមួយ Server! សូមពិនិត្យមើលការរត់ Python Server របស់អ្នក។');
                 console.error(error);
             }
         });
