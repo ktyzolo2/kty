@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sazuki AI Video Dubbing</title>
+    <title>Sazuki AI Video Dubbing Hybrid</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Kantumruy Pro', sans-serif; }</style>
@@ -12,8 +12,8 @@
 
     <div class="max-w-xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 space-y-6">
         <div class="text-center space-y-2">
-            <h1 class="text-2xl font-bold text-blue-400">ប្រព័ន្ធបម្លែងវីដេអូ AI ជាភាសាខ្មែរ 🇰🇭</h1>
-            <p class="text-slate-400 text-sm">ប្តូរវីដេអូចិន ឱ្យទៅជាវីដេអូនិយាយភាសាខ្មែរពិតប្រាកដ</p>
+            <h1 class="text-2xl font-bold text-blue-400">ប្រព័ន្ធបម្លែងវីដេអូ AI (Hybrid) 🇰🇭</h1>
+            <p class="text-slate-400 text-sm">ចាក់វីដេអូ និងបញ្ចូលសម្លេង AI ភាសាខ្មែរដោយរលូន</p>
         </div>
 
         <div class="space-y-4">
@@ -33,14 +33,29 @@
 
             <button onclick="processVideo()" id="submitBtn" 
                 class="w-full py-3 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl transition duration-200">
-                🚀 ចាប់ផ្តើម Render វីដេអូបកប្រែខ្មែរ
+                🚀 ចាប់ផ្តើមបកប្រែ និងចាក់វីដេអូ
             </button>
         </div>
 
         <div id="resultContainer" class="hidden space-y-4 bg-slate-900 p-4 rounded-xl border border-slate-700">
-            <span class="text-xs text-green-400 font-semibold">វីដេអូបកប្រែជាភាសាខ្មែររួចរាល់៖</span>
+            <div>
+                <span class="text-xs text-green-400 font-semibold">ចំណងជើងបកប្រែរួច៖</span>
+                <p id="translatedTitle" class="text-sm font-medium text-white mt-1"></p>
+            </div>
+
+            <!-- Video Player (បិទសម្លេងដើមស្រាប់ muted) -->
             <div class="relative rounded-lg overflow-hidden bg-black aspect-video flex items-center justify-center">
-                <video id="videoPlayer" controls class="w-full h-full object-contain"></video>
+                <video id="videoPlayer" controls muted class="w-full h-full object-contain"></video>
+            </div>
+
+            <!-- Audio Player (សម្លេងខ្មែរ ElevenLabs AI) -->
+            <div class="space-y-1">
+                <span class="text-xs text-blue-400 font-semibold">សម្លេងបកប្រែភាសាខ្មែរ (ElevenLabs AI)៖</span>
+                <audio id="audioPlayer" controls class="w-full"></audio>
+            </div>
+
+            <div class="text-xs text-slate-400">
+                💡 <b>វិធីប្រើប្រាស់៖</b> ចុច Play វីដេអូ និងចុច Play សម្លេង AI ພ້ອມគ្នាដើម្បីស្តាប់ជារឿងនិយាយខ្មែរ!
             </div>
         </div>
     </div>
@@ -53,7 +68,9 @@
             const voiceType = document.getElementById("voiceType").value;
             const submitBtn = document.getElementById("submitBtn");
             const resultContainer = document.getElementById("resultContainer");
+            const translatedTitle = document.getElementById("translatedTitle");
             const videoPlayer = document.getElementById("videoPlayer");
+            const audioPlayer = document.getElementById("audioPlayer");
 
             if (!urlInput) {
                 alert("សូមបញ្ចូលតំណភ្ជាប់វីដេអូជាមុនសិន!");
@@ -61,7 +78,7 @@
             }
 
             submitBtn.disabled = true;
-            submitBtn.innerText = "⏳ กำลัง Render វីដេអូ (សូមរង់ចាំបន្តិច)...";
+            submitBtn.innerText = "⏳ កំពុងទាញយក និងបង្កើតសម្លេង AI...";
 
             try {
                 const response = await fetch(`${BACKEND_URL}/api/process-video`, {
@@ -70,19 +87,25 @@
                     body: JSON.stringify({ url: urlInput, voice_type: voiceType })
                 });
 
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const videoBlobUrl = URL.createObjectURL(blob);
-                    videoPlayer.src = videoBlobUrl;
+                const data = await response.json();
+
+                if (data.success) {
+                    translatedTitle.innerText = data.title;
+                    videoPlayer.src = data.play_url;
+                    
+                    if (data.audio_base64) {
+                        audioPlayer.src = `data:audio/mp3;base64,${data.audio_base64}`;
+                    }
+
                     resultContainer.classList.remove("hidden");
                 } else {
-                    alert("មានបញ្ហាពេល Render វីដេអូ!");
+                    alert("មានបញ្ហា៖ " + (data.detail || "មិនអាចដំណើរការបានទេ"));
                 }
             } catch (error) {
-                alert("មិនអាចតភ្ជាប់ទៅកាន់ Python Server បានទេ!");
+                alert("មិនអាចតភ្ជាប់ទៅកាន់ Python Server ក្នុងទូរស័ព្ទបានទេ!");
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = "🚀 ចាប់ផ្តើម Render វីដេអូបកប្រែខ្មែរ";
+                submitBtn.innerText = "🚀 ចាប់ផ្តើមបកប្រែ និងចាក់វីដេអូ";
             }
         }
     </script>
