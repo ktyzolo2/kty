@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sazuki AI Voice Generator Studio</title>
+    <title>Sazuki Video Link Translator to Khmer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Kantumruy Pro', sans-serif; }</style>
@@ -12,89 +12,88 @@
 
     <div class="max-w-xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 space-y-6">
         <div class="text-center space-y-2">
-            <h1 class="text-2xl font-bold text-blue-400">ប្រព័ន្ធបំលែងអត្ថបទទៅជាសម្លេង AI 🎙️🇰🇭</h1>
-            <p class="text-slate-400 text-sm">សរសេរអត្ថបទ រួចជ្រើសរើសប្រភេទសម្លេងតាមចំណូលចិត្តរបស់អ្នក</p>
+            <h1 class="text-2xl font-bold text-blue-400">ប្រព័ន្ធបកប្រែលីងវីដេអូជាភាសាខ្មែរ 🔗🇰🇭</h1>
+            <p class="text-slate-400 text-sm">ដាក់លីង YouTube, TikTok, Facebook ឬវេបសាយផ្សេងៗ ដើម្បីទាញយកនិងបកប្រែជាអត្ថបទខ្មែរ</p>
         </div>
 
         <div class="space-y-4">
             <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1">បញ្ចូលអត្ថបទរបស់អ្នកនៅទីនេះ៖</label>
-                <textarea id="textContent" rows="4" placeholder="វាយអត្ថបទជាភាសាខ្មែរ..." 
-                    class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-sm text-white resize-none"></textarea>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">ដាក់បញ្ចូលលីងវីដេអូ (Video Link)៖</label>
+                <input type="text" id="videoUrl" placeholder="https://www.tiktok.com/... ឬ YouTube/Facebook..." 
+                    class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-sm text-white">
             </div>
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1">ជ្រើសរើសប្រភេទសម្លេង AI៖</label>
-                <select id="voiceType" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500">
-                    <option value="male">👨 សម្លេងប្រុស (Male Voice)</option>
-                    <option value="female">👩 សំឡេងស្រី (Female Voice)</option>
-                    <option value="sad">😢 សម្លេងយំ / កំសត់ (Sad Voice)</option>
-                    <option value="comedy">🤪 សម្លេងបែបលេងសើច (Comedy Voice)</option>
-                </select>
-            </div>
-
-            <button onclick="generateVoice()" id="submitBtn" 
+            <button onclick="translateLink()" id="submitBtn" 
                 class="w-full py-3 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl transition duration-200">
-                🎧 បង្កើតសម្លេង AI
+                🌐 ទាញយក និងបកប្រែជាអត្ថបទខ្មែរ
             </button>
         </div>
 
-        <div id="resultContainer" class="hidden space-y-4 bg-slate-900 p-4 rounded-xl border border-slate-700 text-center">
-            <span class="text-xs text-green-400 font-semibold">លទ្ធផលសម្លេង AI របស់អ្នក៖</span>
-            
-            <div class="flex justify-center">
-                <audio id="audioPlayer" controls class="w-full"></audio>
+        <div id="resultContainer" class="hidden space-y-4 bg-slate-900 p-4 rounded-xl border border-slate-700">
+            <div>
+                <span class="text-xs text-slate-400 block mb-1">ចំណងជើងដើម (Original Text):</span>
+                <p id="originalTextDisplay" class="text-sm text-slate-300 bg-slate-800 p-3 rounded-lg"></p>
             </div>
-            
-            <a id="downloadBtn" download="ai_voice.mp3" 
-                class="block w-full py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl text-sm transition">
-                📥 ទាញយក File សម្លេង (.MP3)
-            </a>
+
+            <div>
+                <span class="text-xs text-green-400 font-semibold block mb-1">អត្ថបទបកប្រែជាភាសាខ្មែរ (Khmer Translation):</span>
+                <p id="translatedTextDisplay" class="text-sm text-white bg-slate-800 p-3 rounded-lg font-bold border border-green-500/30"></p>
+            </div>
+
+            <button onclick="copyText()" 
+                class="w-full py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl text-sm transition">
+                📋 ចម្លងអត្ថបទខ្មែរ (Copy Text)
+            </button>
         </div>
     </div>
 
     <script>
         const BACKEND_URL = "http://127.0.0.1:8000";
 
-        async function generateVoice() {
-            const textContent = document.getElementById("textContent").value.trim();
-            const voiceType = document.getElementById("voiceType").value;
+        async function translateLink() {
+            const videoUrl = document.getElementById("videoUrl").value.trim();
             const submitBtn = document.getElementById("submitBtn");
             const resultContainer = document.getElementById("resultContainer");
-            const audioPlayer = document.getElementById("audioPlayer");
-            const downloadBtn = document.getElementById("downloadBtn");
+            const originalTextDisplay = document.getElementById("originalTextDisplay");
+            const translatedTextDisplay = document.getElementById("translatedTextDisplay");
 
-            if (!textContent) {
-                alert("សូមបញ្ចូលអត្ថបទជាមុនសិន!");
+            if (!videoUrl) {
+                alert("សូមដាក់បញ្ចូលលីងវីដេអូជាមុនសិន!");
                 return;
             }
 
             submitBtn.disabled = true;
-            submitBtn.innerText = "⏳ កំពុងបង្កើតសម្លេង AI...";
+            submitBtn.innerText = "⏳ កំពុងទាញយកនិងបកប្រែ...";
 
             try {
-                const response = await fetch(`${BACKEND_URL}/api/text-to-speech`, {
+                const response = await fetch(`${BACKEND_URL}/api/translate-link`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ text: textContent, voice_type: voiceType })
+                    body: JSON.stringify({ url: videoUrl })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    const audioBase64 = `data:audio/mp3;base64,${data.audio_base64}`;
-                    audioPlayer.src = audioBase64;
-                    downloadBtn.href = audioBase64;
+                    originalTextDisplay.innerText = data.original_title;
+                    translatedTextDisplay.innerText = data.translated_text;
                     resultContainer.classList.remove("hidden");
                 } else {
-                    alert("មានបញ្ហា៖ " + (data.detail || "មិនអាចបង្កើតសម្លេងបានទេ"));
+                    alert("មានបញ្ហា៖ " + (data.detail || "មិនអាចបកប្រែបានទេ"));
                 }
             } catch (error) {
-                alert("មិនអាចតភ្ជាប់ទៅកាន់ Python Server ក្នុងទូរស័ព្ទបានទេ!");
+                alert("មិនអាចតភ្ជាប់ទៅកាន់ Python Server ក្នុងទូរស័ព្ទបានទេ! សូមពិនិត្យមើលការ Run Server របស់អ្នក។");
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = "🎧 បង្កើតសម្លេង AI";
+                submitBtn.innerText = "🌐 ទាញយក និងបកប្រែជាអត្ថបទខ្មែរ";
             }
+        }
+
+        function copyText() {
+            const text = document.getElementById("translatedTextDisplay").innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("បានចម្លងអត្ថបទខ្មែរជោគជ័យ!");
+            });
         }
     </script>
 </body>
